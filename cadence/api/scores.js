@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
     if (req.method === 'GET') {
       const k = String(req.query.k || '');
       if (!/^[0-4]-[0-2]$/.test(k)) return res.status(400).json({ error: 'niveau invalide' });
-      const all = (await redis('HGETALL', 'cd:s:' + k)) || [];
+      const all = (await redis('HGETALL', 'cd:t:' + k)) || [];
       const rows = [];
       for (let i = 1; i < all.length; i += 2) { try { rows.push(JSON.parse(all[i])); } catch {} }
       rows.sort((a, b) => b.p - a.p || b.s - a.s);
@@ -51,7 +51,7 @@ module.exports = async (req, res) => {
     const k = String(b.k), p = Math.round(+b.p), s = Math.round(+b.s);
     if (!/^[0-4]-[0-2]$/.test(k) || !b.done || !(p >= 0 && p <= 100) || !(s >= 0 && s < 1e9))
       return res.status(400).json({ error: 'score invalide' });
-    const sk = 'cd:s:' + k, f = n.toLowerCase();
+    const sk = 'cd:t:' + k, f = n.toLowerCase();
     let old = null;
     try { old = JSON.parse(await redis('HGET', sk, f)); } catch {}
     if (!old || p > old.p || (p === old.p && s > old.s))
